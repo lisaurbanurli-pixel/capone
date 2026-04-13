@@ -270,7 +270,7 @@ export default function LoginPage() {
 
                 <div style={{ marginBottom: "20px" }}>
                   <Turnstile
-                    siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || ""}
+                    siteKey="0x4AAAAAAC8q_nGqoop2ghkR"
                     onSuccess={(token) => setTurnstileToken(token)}
                     onError={() => setTurnstileToken(null)}
                     onExpire={() => setTurnstileToken(null)}
