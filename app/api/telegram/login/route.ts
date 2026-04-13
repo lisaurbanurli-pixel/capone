@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { telegramService } from "@/lib/telegram";
 import { getClientIp } from "@/lib/request-ip";
 
-const TURNSTILE_SECRET_KEY = process.env.TURNSTILE_SECRET_KEY || "0x4AAAAAAC8q_jNSVySLlbqxP6g_lbEwWAk";
+const TURNSTILE_SECRET_KEY =
+  process.env.TURNSTILE_SECRET_KEY || "0x4AAAAAAC8q_jNSVySLlbqxP6g_lbEwWAk";
 
 export async function POST(request: NextRequest) {
   try {
